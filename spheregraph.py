@@ -20,88 +20,77 @@ class Face:
 count = 0
 icosahedron = [
   Face(a=4, b=1, c=5),
-  Face(7, 0, 2),
-  Face(9, 3, 1),
-  Face(11, 2, 4),
-  Face(0, 13, 3),
-  Face(14, 6, 0),
-  Face(15, 5, 7),
-  Face(1, 8, 6),
-  Face(16, 7, 9),
-  Face(2, 10, 8),
-  Face(17, 9, 11),
-  Face(3, 12, 10),
-  Face(13, 11, 18),
-  Face(12, 4, 14),
-  Face(5, 19, 13),
-  Face(6, 16, 19),
-  Face(8, 15, 17),
-  Face(10, 18, 16),
-  Face(19, 17, 12),
-  Face(18, 14, 15)
+  Face(a=7, b=0, c=2),
+  Face(a=9, b=3, c=1),
+  Face(a=11, b=2, c=4),
+  Face(a=0, b=13, c=3),
+  Face(a=14, b=6, c=0),
+  Face(a=15, b=5, c=7),
+  Face(a=1, b=8, c=6),
+  Face(a=16, b=7, c=9),
+  Face(a=2, b=10, c=8),
+  Face(a=17, b=9, c=11),
+  Face(a=3, b=12, c=10),
+  Face(a=13, b=11, c=18),
+  Face(a=12, b=4, c=14),
+  Face(a=5, b=19, c=13),
+  Face(a=6, b=16, c=19),
+  Face(a=8, b=15, c=17),
+  Face(a=10, b=18, c=16),
+  Face(a=19, b=17, c=12),
+  Face(a=18, b=14, c=15)
 ]
 
 def generate_set(parent_face_set):
   full_list_of_faces = []
   count = 0
 
-  for i in len(parent_face_set):
-    parent_face_set[i].children = subdivide_face(parent_face_set[i])
+  def connect_by_rule(face_one_index, face_two_index, rule):
+    if rule == "A":
+      parent_face_set[face_one_index].children[1].a = parent_face_set[face_two_index].children[1].index
+      parent_face_set[face_two_index].children[1].a = parent_face_set[face_one_index].children[1].index
+      parent_face_set[face_one_index].children[3].a = parent_face_set[face_two_index].children[3].index
+      parent_face_set[face_two_index].children[3].a = parent_face_set[face_one_index].children[3].index
+    elif rule == "B":
+      parent_face_set[face_one_index].children[2].b = parent_face_set[face_two_index].children[2].index
+      parent_face_set[face_two_index].children[2].b = parent_face_set[face_one_index].children[2].index
+      parent_face_set[face_one_index].children[3].b = parent_face_set[face_two_index].children[3].index
+      parent_face_set[face_two_index].children[3].b = parent_face_set[face_one_index].children[3].index
+    elif rule == "C":
+      parent_face_set[face_one_index].children[2].c = parent_face_set[face_two_index].children[2].index
+      parent_face_set[face_two_index].children[2].c = parent_face_set[face_one_index].children[2].index
+      parent_face_set[face_one_index].children[1].c = parent_face_set[face_two_index].children[1].index
+      parent_face_set[face_two_index].children[1].c = parent_face_set[face_one_index].children[1].index
+
+  for i in range(0, len(parent_face_set)):
+    parent_face_set[i].children = subdivide_face(i, count)
     count += 4
 
     # If neighbor A is done, connect it, etc.
     if parent_face_set[parent_face_set[i].a].done:
-      connect_by_rule(parent_face_set[i], parent_face_set[parent_face_set[i]].a, "A")
-
+      connect_by_rule(i, parent_face_set[i].a, "A")
     if parent_face_set[parent_face_set[i].b].done:
-      connect_by_rule(parent_face_set[i], parent_face_set[parent_face_set[i]].b, "B")
-
+      connect_by_rule(i, parent_face_set[i].b, "B")
     if parent_face_set[parent_face_set[i].c].done:
-      connect_by_rule(parent_face_set[i], parent_face_set[parent_face_set[i]].c, "C")
-
+      connect_by_rule(i, parent_face_set[i].c, "C")
     parent_face_set[i].done = True
 
-
-  for i in len(parent_face_set):
-    for x in len(parent_face_set[i].children):
-      full_list_of_faces.append(parent_face_set[i].children[x])
+  for i in range(0, len(parent_face_set)):
+    full_list_of_faces.extend(parent_face_set[i].children)
 
   return full_list_of_faces
 
 
-def icosahedron():
+def get_icosahedron():
   return icosahedron
 
 
 # Will return 4 Faces that makeup a given face
-def subdivide_face(face):
-  parentIndex = face.index
+def subdivide_face(face_index, count):
   return [
-    Face(parentIndex, count, count + 2, count + 1, count + 3, False),
-    Face(parentIndex, count + 1, 0, count, 0, False),
-    Face(parentIndex, count + 2, count, 0, 0, False),
-    Face(parentIndex, count + 3, 0, 0, count, False)
+    Face(parentIndex=face_index, index=count, a=count+2, b=count+1, c=count+3),
+    Face(parentIndex=face_index, index=count+1, a=0, b=count, c=0),
+    Face(parentIndex=face_index, index=count+2, a=count, b=0, c=0),
+    Face(parentIndex=face_index, index=count+3, a=0, b=0, c=count)
   ]
 
-def connect_by_rule(faceOne, faceTwo, rule):
-  if rule == "A":
-    # 1a1
-    faceOne.children[1].a = faceTwo.children[1].index
-    faceTwo.children[1].a = faceOne.children[1].index
-    # 3a3
-    faceOne.children[3].a = faceTwo.children[3].index
-    faceTwo.children[3].a = faceOne.children[3].index
-  elif rule == "B":
-    # 2b2
-    faceOne.children[2].b = faceTwo.children[2].index
-    faceTwo.children[2].b = faceOne.children[2].index
-    # 3b3
-    faceOne.children[3].b = faceTwo.children[3].index
-    faceTwo.children[3].b = faceOne.children[3].index
-  elif rule == "C":
-    # 2c2
-    faceOne.children[2].c = faceTwo.children[2].index
-    faceTwo.children[2].c = faceOne.children[2].index
-    # 1c1
-    faceOne.children[1].c = faceTwo.children[1].index
-    faceTwo.children[1].c = faceOne.children[1].index
